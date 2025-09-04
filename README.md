@@ -1,2 +1,6 @@
 # proge4ttg
-proge 4 ttg
+Liikmed - Marcus Ariston Kikerpill, Andri Kõrgesaar
+----------
+Probleem - Gymis vaja workout'i trackida
+----------
+Eeldatavad rollid - ???
