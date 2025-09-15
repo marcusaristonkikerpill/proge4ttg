@@ -1,0 +1,16 @@
+BoxLayout:
+    orientation: 'vertical'
+    padding: 20
+    spacing: 10
+
+    Label:
+        id: output_label
+        text: 'Tere tulemast!'
+
+    TextInput:
+        id: user_input
+        hint_text: 'Sisesta midagi'
+
+    Button:
+        text: 'Vajuta mind'
+        on_press: app.process_input(user_input.text)
