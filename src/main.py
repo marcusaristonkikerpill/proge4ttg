@@ -1,17 +1,37 @@
+import requests
 from kivy.app import App
-from kivy.uix.label import Label
-from modules.backend import process_text
-import sys
-print(sys.path)
+from kivy.uix.boxlayout import BoxLayout
 
+#vorgu sisene ip
+API_URL = "http://127.0.0.1:5000/lifts"
+
+class MyLayout(BoxLayout):
+    def add_lift(self):
+        exercise = self.ids.exercise_input.text
+        weight = int(self.ids.weight_input.text)
+        reps = int(self.ids.reps_input.text)
+
+        data = {"exercise": exercise, "weight": weight, "reps": reps}
+        response = requests.post(API_URL, json=data)
+
+        if response.status_code == 201:
+            self.ids.output_label.text = f"Added: {exercise} {weight}kg x{reps}"
+        else:
+            self.ids.output_label.text = "Error adding lift"
+
+    def get_lifts(self):
+        response = requests.get(API_URL)
+        if response.status_code == 200:
+            lifts = response.json()
+            self.ids.output_label.text = "\n".join(
+                [f"{l['exercise']} {l['weight']}kg x{l['reps']}" for l in lifts]
+            )
+        else:
+            self.ids.output_label.text = "Error fetching lifts"
 
 class MyApp(App):
     def build(self):
-        return None  # Kivy otsib automaatselt myapp.kv
-
-    def process_input(self, text):
-        result = process_text(text)
-        self.root.ids.output_label.text = result
+        return MyLayout()
 
 if __name__ == "__main__":
     MyApp().run()

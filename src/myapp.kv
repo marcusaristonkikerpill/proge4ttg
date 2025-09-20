@@ -1,16 +1,30 @@
-BoxLayout:
-    orientation: 'vertical'
-    padding: 20
+<MyLayout>:
+    orientation: "vertical"
     spacing: 10
+    padding: 20
+
+    TextInput:
+        id: exercise_input
+        hint_text: "Harjurus"
+
+    TextInput:
+        id: weight_input
+        hint_text: "Raskus (kg)"
+        input_filter: "int"
+
+    TextInput:
+        id: reps_input
+        hint_text: "Reps"
+        input_filter: "int"
+
+    Button:
+        text: "Lisa harjutus"
+        on_press: root.add_lift()
+
+    Button:
+        text: "Harjurused"
+        on_press: root.get_lifts()
 
     Label:
         id: output_label
-        text: 'Tere tulemast!'
-
-    TextInput:
-        id: user_input
-        hint_text: 'Sisesta midagi'
-
-    Button:
-        text: 'Vajuta mind'
-        on_press: app.process_input(user_input.text)
+        text: "Tulemused"
