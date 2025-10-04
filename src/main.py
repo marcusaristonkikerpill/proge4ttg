@@ -1,11 +1,19 @@
 import requests
 from kivy.app import App
 from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.screenmanager import ScreenManager, Screen
 
-#vorgu sisene ip
 API_URL = "http://127.0.0.1:5000/lifts"
 
-class MyLayout(BoxLayout):
+
+class HomeScreen(Screen):
+    pass
+
+class TemplateScreen(Screen):
+    pass
+
+
+class LiftsScreen(Screen):
     def add_lift(self):
         exercise = self.ids.exercise_input.text
         weight = int(self.ids.weight_input.text)
@@ -29,9 +37,15 @@ class MyLayout(BoxLayout):
         else:
             self.ids.output_label.text = "Error fetching lifts"
 
+
 class MyApp(App):
     def build(self):
-        return MyLayout()
+        sm = ScreenManager()
+        sm.add_widget(HomeScreen(name="home"))
+        sm.add_widget(LiftsScreen(name="lifts"))
+        sm.add_widget(TemplateScreen(name="templates"))
+        return sm
+
 
 if __name__ == "__main__":
     MyApp().run()

@@ -1,46 +1,67 @@
-<MyLayout>:
-    orientation: "vertical"
-    spacing: 10
-    padding: 20
+<HomeScreen>:
+    BoxLayout:
+        orientation: "vertical"
+        spacing: 10
+        padding: 20
 
-    TextInput:
-        id: exercise_input
-        hint_text: "Harjutus"
+        Label:
+            text: "Welcome to Home"
 
-    TextInput:
-        id: weight_input
-        hint_text: "Raskus (kg)"
-        input_filter: "int"
+        Button:
+            text: "Go to Lifts"
+            on_release: app.root.current = "lifts"
 
-    TextInput:
-        id: reps_input
-        hint_text: "Reps"
-        input_filter: "int"
-
-    Button:
-        text: "Lisa harjutus"
-        on_press: root.add_lift()
-        font_size: 30
-        color: (1, 1, 1, 1)
-        background_color: (0, 0, 1, 1)
-        font_name: "calibri"
-        size_hint: 0.6, 0.6
-        pos_hint: {"x":.2, "top":1}
-        border: 30,30,30,30
+        Button:
+            text: "Go to Templates"
+            on_release: app.root.current = "templates"
 
 
-    Button:
-        text: "Harjurused"
-        on_press: root.get_lifts()
-        background_color: (0, 0, 1, 1)
-        font_name: "calibri"
-        font_size: 30
-        size_hint: 0.6, 0.6
-        pos_hint: {"x":.2, "top":1}
-        border: 30,30,30,30
+<LiftsScreen>:
+    BoxLayout:
+        orientation: "vertical"
+        spacing: 10
+        padding: 20
 
-    Label:
-        id: output_label
-        text: "Tulemused"
+        TextInput:
+            id: exercise_input
+            hint_text: "Exercise"
+
+        TextInput:
+            id: weight_input
+            hint_text: "Weight (kg)"
+            input_filter: "int"
+
+        TextInput:
+            id: reps_input
+            hint_text: "Reps"
+            input_filter: "int"
+
+        Button:
+            text: "Add Lift"
+            on_release: root.add_lift()
+
+        Button:
+            text: "Show Lifts"
+            on_release: root.get_lifts()
+
+        Label:
+            id: output_label
+            text: "Results"
+
+        Button:
+            text: "Back to Home"
+            on_release: app.root.current = "home"
 
 
+<TemplateScreen>:
+    BoxLayout:
+        orientation: "vertical"
+        spacing: 10
+        padding: 20
+
+        Label:
+            text: "This is the Template Screen"
+
+        Button:
+            text: "Back to Home"
+            on_release: app.root.current = "home"
