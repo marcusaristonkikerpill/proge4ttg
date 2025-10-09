@@ -12,6 +12,32 @@ class HomeScreen(Screen):
 class TemplateScreen(Screen):
     pass
 
+class ShowLiftsScreen(Screen):
+    pass
+
+class ErinevadHarjutusedScreen(Screen):
+    def lisa_harjutus(self, exercise):
+        app = App.get_running_app()
+        lifts_screen = app.root.get_screen("lifts")
+
+        weight_text = lifts_screen.ids.weight_input.text
+        reps_text = lifts_screen.ids.reps_input.text
+
+        if not weight_text or not reps_text:
+            print("⚠️ Please enter weight and reps in LiftsScreen first.")
+            return
+
+        try:
+            weight = int(weight_text)
+            reps = int(reps_text)
+        except ValueError:
+            print("⚠️ Invalid input — must be numbers.")
+            return
+
+        app.add_lift_to_api(exercise, weight, reps)
+
+
+
 
 class LiftsScreen(Screen):
     def add_lift(self):
@@ -44,7 +70,20 @@ class MyApp(App):
         sm.add_widget(HomeScreen(name="home"))
         sm.add_widget(LiftsScreen(name="lifts"))
         sm.add_widget(TemplateScreen(name="templates"))
+        sm.add_widget(ErinevadHarjutusedScreen(name="erinevad_harjutused"))
         return sm
+
+    def add_lift_to_api(self, exercise, weight, reps):
+        data = {"exercise": exercise, "weight": weight, "reps": reps}
+        try:
+            response = requests.post(API_URL, json=data)
+            if response.status_code == 201:
+                print(f"✅ Added: {exercise} {weight}kg x{reps}")
+            else:
+                print(f"⚠️ Server returned {response.status_code}")
+        except Exception as e:
+            print(f"❌ Error sending data: {e}")
+
 
 
 if __name__ == "__main__":

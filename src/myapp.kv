@@ -23,10 +23,6 @@
         padding: 20
 
         TextInput:
-            id: exercise_input
-            hint_text: "Exercise"
-
-        TextInput:
             id: weight_input
             hint_text: "Weight (kg)"
             input_filter: "int"
@@ -35,10 +31,11 @@
             id: reps_input
             hint_text: "Reps"
             input_filter: "int"
-
+        
         Button:
-            text: "Add Lift"
-            on_release: root.add_lift()
+            background_color: "red"
+            text: "Lift"
+            on_release: app.root.current = "erinevad_harjutused"
 
         Button:
             text: "Show Lifts"
@@ -64,4 +61,29 @@
 
         Button:
             text: "Back to Home"
+            on_release: app.root.current = "home"
+
+<ErinevadHarjutusedScreen>:
+    BoxLayout:
+        orientation: "vertical"
+        spacing: 10
+        padding: 20
+
+        Label:
+            text: "Vali harjutus, mida lisada"
+
+        Button:
+            text: "Squat"
+            on_release: root.lisa_harjutus("Squat"); app.root.current = "lifts"
+
+        Button:
+            text: "Deadlift"
+            on_release: root.lisa_harjutus("Deadlift"); app.root.current = "lifts"
+
+        Button:
+            text: "Bench Press"
+            on_release: root.lisa_harjutus("Bench Press"); app.root.current = "lifts"
+
+        Button:
+            text: "Tagasi avalehele"
             on_release: app.root.current = "home"
