@@ -28,7 +28,7 @@ class ShowLiftsScreen(Screen):
             if response.status_code == 200:
                 lifts = response.json()
                 if not lifts:
-                    self.ids.max_lifts_label.text = "Pole veel ühtegi tõstet salvestatud!"
+                    self.ids.max_lifts_label.text = "No lifts have been saved!"
                     return
 
                 all_lifts = [
@@ -48,7 +48,7 @@ class EndScreen(Screen):
 
         minutes = lifts_screen.elapsed_seconds // 60
         seconds = lifts_screen.elapsed_seconds % 60
-        self.ids.duration_label.text = f"Treening kestis: {minutes:02d}:{seconds:02d}"
+        self.ids.duration_label.text = f"Workout lasted: {minutes:02d}:{seconds:02d}"
 
         try:
             response = requests.get(API_URL)
@@ -114,7 +114,7 @@ class LiftsScreen(Screen):
     def update_clock_label(self):
         minutes = self.elapsed_seconds // 60
         seconds = self.elapsed_seconds % 60
-        self.ids.clock_label.text = f"Workout kestnud: {minutes:02d}:{seconds:02d}"
+        self.ids.clock_label.text = f"{minutes:02d}:{seconds:02d}"
     
     def add_lift(self):
         exercise = self.ids.exercise_input.text
