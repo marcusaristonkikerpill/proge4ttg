@@ -115,7 +115,7 @@ class LiftsScreen(Screen):
         hours = self.elapsed_seconds // 60
         minutes = self.elapsed_seconds // 60
         seconds = self.elapsed_seconds % 60
-        self.ids.clock_label.text = f"{hours:02d}{minutes:02d}:{seconds:02d}"
+        self.ids.clock_label.text = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
     
     def add_lift(self):
         exercise = self.ids.exercise_input.text
