@@ -45,7 +45,7 @@ class ShowLiftsScreen(Screen):
 class EndScreen(Screen):
     def on_enter(self):
         lifts_screen = self.manager.get_screen("lifts")
-        hours = lifts_screen.elapsed_seconds // 60
+        hours = lifts_screen.elapsed_minutes // 60
         minutes = lifts_screen.elapsed_seconds // 60
         seconds = lifts_screen.elapsed_seconds % 60
         self.ids.duration_label.text = f"Workout lasted: {hours:02d}{minutes:02d}:{seconds:02d}"
@@ -96,6 +96,7 @@ class ErinevadHarjutusedScreen(Screen):
 class LiftsScreen(Screen):
     clock_event = None
     elapsed_seconds = 0
+    elapsed_minutes = 0
 
     def on_enter(self):
         self.elapsed_seconds = 0
@@ -112,7 +113,7 @@ class LiftsScreen(Screen):
         self.update_clock_label()
 
     def update_clock_label(self):
-        hours = self.elapsed_seconds // 60
+        hours = self.elapsed_minutes // 60
         minutes = self.elapsed_seconds // 60
         seconds = self.elapsed_seconds % 60
         self.ids.clock_label.text = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
