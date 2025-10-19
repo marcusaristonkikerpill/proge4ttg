@@ -1,174 +1,181 @@
-import requests
 from kivy.app import App
-from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.screenmanager import ScreenManager, Screen
+from kivy.properties import StringProperty, ListProperty, NumericProperty
 from kivy.clock import Clock
-from kivy.uix.label import Label
-from kivy.uix.button import Button
-from kivy.uix.textinput import TextInput
-from kivy.core.window import Window
+from kivy.network.urlrequest import UrlRequest
 from kivy.core.text import LabelBase
-from kivy.lang import Builder
-Window.clearcolor = (1, 1, 1, 1)
-
-API_URL = "http://127.0.0.1:5000/lifts"
-
-LabelBase.register(name='CustomFont', fn_regular='FugazOne-Regular.ttf')
+import json
+from datetime import datetime
 
 class HomeScreen(Screen):
     pass
 
-class TemplateScreen(Screen):
-    pass
-
-class ShowLiftsScreen(Screen):
+class LiftsScreen(Screen):
+    current_exercise = StringProperty("")
+    workout_start_time = NumericProperty(0)
+    current_workout_lifts = ListProperty([])
+    
     def on_enter(self):
-        try:
-            response = requests.get(API_URL)
-            if response.status_code == 200:
-                lifts = response.json()
-                if not lifts:
-                    self.ids.max_lifts_label.text = "No lifts have been saved!"
-                    return
+        self.workout_start_time = Clock.get_time()
+        self.update_clock()
+        Clock.schedule_interval(self.update_clock, 1)
+    
+    def update_clock(self, dt=None):
+        if self.workout_start_time:
+            elapsed = Clock.get_time() - self.workout_start_time
+            hours = int(elapsed // 3600)
+            minutes = int((elapsed % 3600) // 60)
+            seconds = int(elapsed % 60)
+            self.ids.clock_label.text = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+    
+    def add_lift(self):
+        weight = self.ids.weight_input.text
+        reps = self.ids.reps_input.text
+        
+        if weight and reps and self.current_exercise:
+            lift_data = {
+                "exercise": self.current_exercise,
+                "weight": int(weight),
+                "reps": int(reps)
+            }
+            self.current_workout_lifts.append(lift_data)
+            
+            self.ids.weight_input.text = ""
+            self.ids.reps_input.text = ""
+            
+            print(f"Added {self.current_exercise}: {weight}kg x {reps} reps")
+    
+    def finish_workout(self):
+        if not self.current_workout_lifts:
+            print("No lifts to save!")
+            return
+        
 
-                all_lifts = [
-                    f"{lift['exercise']} {lift['weight']}kg x{lift['reps']}"
-                    for lift in lifts
-                ]
-
-                self.ids.max_lifts_label.text = "\n".join(all_lifts)
-            else:
-                self.ids.max_lifts_label.text = f"Viga serveris: {response.status_code}"
-        except Exception as e:
-            self.ids.max_lifts_label.text = f"Viga: {str(e)}"
-
-class EndScreen(Screen):
-    def on_enter(self):
-        lifts_screen = self.manager.get_screen("lifts")
-        hours = lifts_screen.elapsed_minutes // 60
-        minutes = lifts_screen.elapsed_seconds // 60
-        seconds = lifts_screen.elapsed_seconds % 60
-        self.ids.duration_label.text = f"Workout lasted: {hours:02d}{minutes:02d}:{seconds:02d}"
-
-        try:
-            response = requests.get(API_URL)
-            if response.status_code == 200:
-                lifts = response.json()
-                max_lifts = {}
-                for lift in lifts:
-                    exercise = lift["exercise"]
-                    weight = lift["weight"]
-                    if exercise not in max_lifts or weight > max_lifts[exercise]:
-                        max_lifts[exercise] = weight
-
-                self.ids.max_lifts_label.text = "\n".join(
-                    [f"{ex}: {wt}kg" for ex, wt in max_lifts.items()]
-                )
-            else:
-                self.ids.max_lifts_label.text = "Error fetching lifts"
-        except Exception as e:
-            self.ids.max_lifts_label.text = f"Error: {str(e)}"
+        duration_minutes = int((Clock.get_time() - self.workout_start_time) / 60)
+        
+        workout_data = {
+            "name": f"Workout {datetime.now().strftime('%Y-%m-%d %H:%M')}",
+            "duration": duration_minutes,
+            "notes": f"Completed {len(self.current_workout_lifts)} lifts",
+            "lifts": self.current_workout_lifts
+        }
+        
+        headers = {'Content-Type': 'application/json'}
+        UrlRequest(
+            'http://127.0.0.1:5000/workouts',
+            on_success=self.on_workout_saved,
+            on_failure=self.on_request_error,
+            on_error=self.on_request_error,
+            req_headers=headers,
+            req_body=json.dumps(workout_data),
+            method='POST'
+        )
+    
+    def on_workout_saved(self, req, result):
+        print("Workout saved successfully!")
+        self.current_workout_lifts = []
+        self.workout_start_time = 0
+        self.current_exercise = ""
+        Clock.unschedule(self.update_clock)
+        self.ids.clock_label.text = "00:00:00"
+        
+        self.manager.current = "end"
+    
+    def on_request_error(self, req, error):
+        print(f"Error saving workout: {error}")
 
 class ErinevadHarjutusedScreen(Screen):
     def lisa_harjutus(self, exercise):
-        app = App.get_running_app()
-        lifts_screen = app.root.get_screen("lifts")
+        lifts_screen = self.manager.get_screen('lifts')
+        lifts_screen.current_exercise = exercise
+        print(f"Selected exercise: {exercise}")
 
-        weight_text = lifts_screen.ids.weight_input.text
-        reps_text = lifts_screen.ids.reps_input.text
-
-        if not weight_text or not reps_text:
-            print("⚠️ Please enter weight and reps in LiftsScreen first.")
-            return
-
-        try:
-            weight = int(weight_text)
-            reps = int(reps_text)
-        except ValueError:
-            print("⚠️ Invalid input — must be numbers.")
-            return
-
-        app.add_lift_to_api(exercise, weight, reps)
-
-
-
-
-class LiftsScreen(Screen):
-    clock_event = None
-    elapsed_seconds = 0
-    elapsed_minutes = 0
-
+class ShowLiftsScreen(Screen):
     def on_enter(self):
-        self.elapsed_seconds = 0
-        self.update_clock_label()
-        self.clock_event = Clock.schedule_interval(self.update_timer, 1)
-
-    def on_leave(self):
-        if self.clock_event:
-            self.clock_event.cancel()
-            self.clock_event = None
-
-    def update_timer(self, dt):
-        self.elapsed_seconds += 1
-        self.update_clock_label()
-
-    def update_clock_label(self):
-        hours = self.elapsed_minutes // 60
-        minutes = self.elapsed_seconds // 60
-        seconds = self.elapsed_seconds % 60
-        self.ids.clock_label.text = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+        self.load_workouts()
     
-    def add_lift(self):
-        exercise = self.ids.exercise_input.text
-        weight = int(self.ids.weight_input.text)
-        reps = int(self.ids.reps_input.text)
+    def load_workouts(self):
+        UrlRequest(
+            'http://127.0.0.1:5000/workouts',
+            on_success=self.on_workouts_loaded,
+            on_failure=self.on_request_error,
+            on_error=self.on_request_error
+        )
+    
+    def on_workouts_loaded(self, req, result):
+        display_text = "WORKOUT HISTORY:\n\n"
+        
+        for workout in result:
+            display_text += f"{workout['name']} ({workout['date']})\n"
+            display_text += f"Duration: {workout['duration']} min\n"
+            
+            exercise_max = {}
+            for lift in workout['lifts']:
+                exercise = lift['exercise']
+                weight = lift['weight']
+                if exercise not in exercise_max or weight > exercise_max[exercise]:
+                    exercise_max[exercise] = weight
+            
+            for exercise, max_weight in exercise_max.items():
+                display_text += f"  {exercise}: {max_weight}kg (max)\n"
+            
+            display_text += "  All lifts:\n"
+            for lift in workout['lifts']:
+                display_text += f"    {lift['exercise']}: {lift['weight']}kg x {lift['reps']}\n"
+            
+            display_text += "\n" + "="*50 + "\n\n"
+        
+        self.ids.max_lifts_label.text = display_text
+    
+    def on_request_error(self, req, error):
+        print(f"Error loading workouts: {error}")
 
-        data = {"exercise": exercise, "weight": weight, "reps": reps}
-        response = requests.post(API_URL, json=data)
+class EndScreen(Screen):
+    def on_enter(self):
+        UrlRequest(
+            'http://127.0.0.1:5000/workouts',
+            on_success=self.on_workouts_loaded,
+            on_failure=self.on_request_error
+        )
+    
+    def on_workouts_loaded(self, req, result):
+        if result:
+            latest_workout = result[-1]
+            
+            self.ids.duration_label.text = f"Workout lasted: {latest_workout['duration']} minutes"
+            
+            exercise_max = {}
+            for lift in latest_workout['lifts']:
+                exercise = lift['exercise']
+                weight = lift['weight']
+                if exercise not in exercise_max or weight > exercise_max[exercise]:
+                    exercise_max[exercise] = weight
+            
+            max_lifts_text = "Best Lifts:\n"
+            for exercise, max_weight in exercise_max.items():
+                max_lifts_text += f"{exercise}: {max_weight}kg\n"
+            
+            self.ids.max_lifts_label.text = max_lifts_text
+    
+    def on_request_error(self, req, error):
+        print(f"Error loading workout data: {error}")
 
-        if response.status_code == 201:
-            self.ids.output_label.text = f"Added: {exercise} {weight}kg x{reps}"
-        else:
-            self.ids.output_label.text = "Error adding lift"
-
-    def get_lifts(self):
-        response = requests.get(API_URL)
-        if response.status_code == 200:
-            lifts = response.json()
-            self.ids.output_label.text = "\n".join(
-                [f"{l['exercise']} {l['weight']}kg x{l['reps']}" for l in lifts]
-            )
-        else:
-            self.ids.output_label.text = "Error fetching lifts"
-
-    def finish_workout(self):
-        if self.clock_event:
-            self.clock_event.cancel()
-            self.clock_event = None
-        self.manager.current = "end"
-
+class TemplateScreen(Screen):
+    pass
 
 class MyApp(App):
     def build(self):
+        LabelBase.register(name="CustomFont",
+                          fn_regular="FugazOne-Regular.ttf")
+        
         sm = ScreenManager()
-        sm.add_widget(HomeScreen(name="home"))
-        sm.add_widget(LiftsScreen(name="lifts"))
-        sm.add_widget(TemplateScreen(name="templates"))
-        sm.add_widget(EndScreen(name="end"))
-        sm.add_widget(ErinevadHarjutusedScreen(name="erinevad_harjutused"))
-        sm.add_widget(ShowLiftsScreen(name="show"))
+        sm.add_widget(HomeScreen(name='home'))
+        sm.add_widget(LiftsScreen(name='lifts'))
+        sm.add_widget(TemplateScreen(name='templates'))
+        sm.add_widget(ErinevadHarjutusedScreen(name='erinevad_harjutused'))
+        sm.add_widget(EndScreen(name='end'))
+        sm.add_widget(ShowLiftsScreen(name='show'))
         return sm
 
-    def add_lift_to_api(self, exercise, weight, reps):
-        data = {"exercise": exercise, "weight": weight, "reps": reps}
-        try:
-            response = requests.post(API_URL, json=data)
-            if response.status_code == 201:
-                print(f"✅ Added: {exercise} {weight}kg x{reps}")
-            else:
-                print(f"⚠️ Server returned {response.status_code}")
-        except Exception as e:
-            print(f"❌ Error sending data: {e}")
-
-if __name__ == "__main__":
+if __name__ == '__main__':
     MyApp().run()

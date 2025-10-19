@@ -1,9 +1,11 @@
 <HomeScreen>:
-    
     BoxLayout:
         canvas.before:
             Color:
                 rgba: 1, 1, 1, 1
+            Rectangle: 
+                pos: self.pos
+                size: self.size
         orientation: "vertical"
         spacing: 10
         padding: 20
@@ -22,8 +24,6 @@
             background_color: 1, .3, .4, .85
             on_press: self.background_color = (1.0 ,0.0, 0.0, 1.0)
             on_release: self.background_color = (1, .3, .4, .85)
-           
-            
 
         Button:
             text: "Go to Templates"
@@ -34,12 +34,23 @@
             on_press: self.background_color = (1.0 ,0.0, 0.0, 1.0)
             on_release: self.background_color = (1, .3, .4, .85)
 
-
 <LiftsScreen>:
     BoxLayout:
+        canvas.before:
+            Color:
+                rgba: 1, 1, 1, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
         orientation: "vertical"
         spacing: 10
         padding: 20
+
+        Label:
+            text: f"Current Exercise: {root.current_exercise}"
+            color: "black"
+            font_name: "CustomFont"
+            font_size: 20
 
         TextInput:
             id: weight_input
@@ -55,7 +66,12 @@
             background_color: 1, .3, .4, .85
             on_press: self.background_color = (1.0 ,0.0, 0.0, 1.0)
             on_release: self.background_color = (1, .3, .4, .85)
-            text: "Lift"
+            text: "Add Lift"
+            on_release: root.add_lift()
+            font_name: "CustomFont"
+
+        Button:
+            text: "Change Exercise"
             on_release: app.root.current = "erinevad_harjutused"
             font_name: "CustomFont"
 
@@ -66,8 +82,14 @@
             font_name: "CustomFont"
             font_size: 20
 
+        Label:
+            text: f"Lifts in this workout: {len(root.current_workout_lifts)}"
+            color: "black"
+            font_name: "CustomFont"
+            font_size: 16
+
         Button:
-            text: "Show Lifts"
+            text: "Show Workout History"
             on_release: app.root.current = "show"
             font_name: "CustomFont"
 
@@ -80,10 +102,17 @@
             text: "Finish workout"
             on_release: root.finish_workout()
             font_name: "CustomFont"
-
+            background_color: 0, 1, 0, 0.8
 
 <TemplateScreen>:
     BoxLayout:
+        canvas.before:
+            Color:
+                rgba: 1, 1, 1, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
         orientation: "vertical"
         spacing: 10
         padding: 20
@@ -99,32 +128,55 @@
 
 <ErinevadHarjutusedScreen>:
     BoxLayout:
+        canvas.before:
+            Color:
+                rgba: 1, 1, 1, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
         orientation: "vertical"
         spacing: 10
         padding: 20
 
         Label:
             text: "Pick an exercise"
+            font_name: "CustomFont"
+            font_size: 24
 
         Button:
             text: "Squat"
             on_release: root.lisa_harjutus("Squat"); app.root.current = "lifts"
+            font_name: "CustomFont"
 
         Button:
             text: "Deadlift"
             on_release: root.lisa_harjutus("Deadlift"); app.root.current = "lifts"
+            font_name: "CustomFont"
 
         Button:
             text: "Bench Press"
             on_release: root.lisa_harjutus("Bench Press"); app.root.current = "lifts"
+            font_name: "CustomFont"
 
         Button:
             text: "Back home"
             on_release: app.root.current = "home"
+            font_name: "CustomFont"
 
 <EndScreen>:
     BoxLayout:
+        canvas.before:
+            Color:
+                rgba: 1, 1, 1, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
         orientation: "vertical"
+        padding: 20
+        spacing: 10
+        
         Label:
             id: duration_label
             text: "Workout lasted"
@@ -143,21 +195,29 @@
             text: "Heaviest lifts"
             color: "black"
             font_name: "CustomFont"
+            font_size: 20
+        
         Button:
             text: "Back home"
             on_release: app.root.current = "home"
-            color: "black"
             font_name: "CustomFont"
-
+            background_color: 1, .3, .4, .85
 
 <ShowLiftsScreen>:
     BoxLayout:
+        canvas.before:
+            Color:
+                rgba: 1, 1, 1, 1
+            Rectangle:
+                pos: self.pos
+                size: self.size
+
         orientation: "vertical"
         padding: 20
         spacing: 10
 
         Label:
-            text: "Completed lifts"
+            text: "Workout History"
             color: "black"
             font_name: "CustomFont"
             font_size: 30
@@ -165,10 +225,10 @@
         ScrollView:
             Label:
                 id: max_lifts_label
-                text: "Lifts will appear here..."
+                text: "Loading workouts..."
                 color: "black"
                 font_name: "CustomFont"
-                font_size: 20
+                font_size: 16
                 text_size: self.width, None
                 size_hint_y: None
                 height: self.texture_size[1]
