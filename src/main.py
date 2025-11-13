@@ -6,6 +6,8 @@ from kivy.network.urlrequest import UrlRequest
 from kivy.core.text import LabelBase
 import json
 from datetime import datetime
+from kivy.core.window import Window
+Window.fullscreen = 'auto'
 
 class HomeScreen(Screen):
     pass
