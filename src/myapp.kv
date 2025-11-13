@@ -11,7 +11,7 @@
         padding: 20
 
         Image:
-			source: 'LOGO.png'
+			source: 'pildid/LOGO.png'
 			allow_stretch: True
 			keep_ratio: True
             size_hint: None, None
@@ -23,15 +23,15 @@
             size_hint: None, None
             on_release: app.root.current = "lifts"
             font_name: "CustomFont"
-            background_normal: "srtat.png"
-            background_down: "startdown.png"
+            background_normal: "pildid/srtat.png"
+            background_down: "pildid/startdown.png"
             pos_hint:{"center_x": 0.5, "center_y": 0.1}
 
         Button:
             id: btnExit
             size: 1200, 150
             size_hint: None, None
-            background_normal: "exit.png"
+            background_normal: "pildid/exit.png"
             on_press: app.stop() 
             pos_hint:{"center_x": 0.5, "center_y": 0.1}
         Widget:
@@ -182,7 +182,7 @@
         spacing: 10
         
         Image:
-			source: 'star.png'
+			source: 'pildid/star.png'
 			allow_stretch: True
 			keep_ratio: True
             size_hint: None, None 
